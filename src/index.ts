@@ -1,44 +1,62 @@
 import { WebSocketServer } from "ws";
 import { GameEngine } from "./engine/gameEngine.ts";
 import { TICK_INTERVAL } from "./constants.ts";
-import type { ClientMessage, InputState, ServerMessage } from "./types/types.ts";
+import type {
+  ClientMessage,
+  InputState,
+  ServerMessage,
+} from "./types/types.ts";
 import { MessageType } from "./types/enums.ts";
 
 const wss = new WebSocketServer({ port: 8080 });
+let engine: GameEngine | null = null;
+let nextPlayerId = 1;
+let interval: NodeJS.Timeout | null = null;
 
 console.log("Server running on ws://localhost:8080");
 
 wss.on("connection", (ws) => {
-  let engine: GameEngine | null = null;
-  let latestInput: InputState = {
-    move: 0,
-    shoot: false,
-  };
-  let interval: NodeJS.Timeout | null = null;
+  const playerId = (nextPlayerId++).toString();
+
+  // Send the assigned ID to the client
+  ws.send(
+    JSON.stringify({
+      type: MessageType.ASSIGN_ID,
+      id: playerId,
+    } as ServerMessage),
+  );
 
   ws.on("message", (msg) => {
     try {
       const data = JSON.parse(msg.toString()) as ClientMessage;
 
-      if (data.type === MessageType.INIT && !engine) {
-        const { width, height } = data.dimensions;
-        engine = new GameEngine(width, height);
+      if (data.type === MessageType.INIT) {
+        if (!engine) {
+          const { width, height } = data.dimensions;
+          engine = new GameEngine(width, height);
 
-        // Start game loop only after initialization
-        interval = setInterval(() => {
-          if (!engine) return;
+          // Start game loop broadcast
+          interval = setInterval(() => {
+            if (!engine) return;
 
-          engine.setInput(latestInput);
-          engine.update();
+            engine.update();
 
-          const message: ServerMessage = {
-            type: MessageType.STATE,
-            state: engine.getState(),
-          };
-          ws.send(JSON.stringify(message));
-        }, TICK_INTERVAL);
+            const message: ServerMessage = {
+              type: MessageType.STATE,
+              state: engine.getState(),
+            };
+            const serializedState = JSON.stringify(message);
+
+            wss.clients.forEach((client) => {
+              if (client.readyState === 1) {
+                client.send(serializedState);
+              }
+            });
+          }, TICK_INTERVAL);
+        }
+        engine.addPlayer(playerId);
       } else if (data.type === MessageType.INPUT && engine) {
-        latestInput = data.input;
+        engine.setInput(playerId, data.input);
       }
     } catch (err) {
       console.error("Failed to process message:", err);
@@ -46,6 +64,13 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-    if (interval) clearInterval(interval);
+    if (engine) engine.removePlayer(playerId);
+
+    // If no clients left, we could optionally reset the engine
+    if (wss.clients.size === 0 && interval) {
+      clearInterval(interval);
+      interval = null;
+      engine = null;
+    }
   });
 });

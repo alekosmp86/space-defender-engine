@@ -28,7 +28,7 @@ export type Enemy = {
 
 export type GameState = {
   tick: number;
-  player: Player;
+  players: Record<string, Player>;
   bullets: Bullet[];
   enemies: Enemy[];
   level: number;
@@ -49,7 +49,12 @@ export type ClientMessage =
       };
     };
 
-export type ServerMessage = {
-  type: MessageType;
-  state: GameState;
-};
+export type ServerMessage =
+  | {
+      type: typeof MessageType.STATE;
+      state: GameState;
+    }
+  | {
+      type: typeof MessageType.ASSIGN_ID;
+      id: string;
+    };

@@ -2,6 +2,7 @@ export const MessageType = {
   INPUT: "input",
   STATE: "state",
   INIT: "init",
+  ASSIGN_ID: "assign_id",
 } as const;
 export type MessageType = (typeof MessageType)[keyof typeof MessageType];
 

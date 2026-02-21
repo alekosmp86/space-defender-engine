@@ -4,7 +4,7 @@ import type { GameState, InputState } from "../types/types.ts";
 
 export class GameEngine {
   private state: GameState;
-  private input: InputState;
+  private inputs: Record<string, InputState> = {};
   private width: number;
   private height: number;
   private nextBulletId: number = 0;
@@ -14,17 +14,16 @@ export class GameEngine {
     this.width = width;
     this.height = height;
     this.state = this.createInitialState();
-    this.input = { move: 0, shoot: false };
   }
 
   public update(): void {
     this.state.tick++;
 
-    // Move player
-    this.movePlayer();
-
-    // Shooting cooldown
-    this.playerShoot();
+    // Move players and shoot
+    for (const id in this.state.players) {
+      this.movePlayer(id);
+      this.playerShoot(id);
+    }
 
     // Update bullets
     this.updateBullets();
@@ -43,18 +42,28 @@ export class GameEngine {
     return this.state;
   }
 
-  public setInput(input: InputState): void {
-    this.input = input;
+  public setInput(id: string, input: InputState): void {
+    this.inputs[id] = input;
+  }
+
+  public addPlayer(id: string): void {
+    this.state.players[id] = {
+      x: this.width / 2,
+      y: this.height - 60,
+      cooldown: 0,
+    };
+    this.inputs[id] = { move: 0, shoot: false };
+  }
+
+  public removePlayer(id: string): void {
+    delete this.state.players[id];
+    delete this.inputs[id];
   }
 
   private createInitialState(): GameState {
     return {
       tick: 0,
-      player: {
-        x: this.width / 2,
-        y: this.height - 60,
-        cooldown: 0,
-      },
+      players: {},
       bullets: [],
       enemies: [],
       level: 1,
@@ -76,27 +85,34 @@ export class GameEngine {
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
   }
 
-  private movePlayer(): void {
-    this.state.player.x += this.input.move * PLAYER_SPEED;
+  private movePlayer(id: string): void {
+    const player = this.state.players[id];
+    const input = this.inputs[id];
+    if (!player || !input) return;
 
-    if (this.state.player.x < 20) this.state.player.x = 20;
-    if (this.state.player.x > this.width - 20)
-      this.state.player.x = this.width - 20;
+    player.x += input.move * PLAYER_SPEED;
+
+    if (player.x < 20) player.x = 20;
+    if (player.x > this.width - 20) player.x = this.width - 20;
   }
 
-  private playerShoot(): void {
-    if (this.state.player.cooldown > 0) {
-      this.state.player.cooldown--;
+  private playerShoot(id: string): void {
+    const player = this.state.players[id];
+    const input = this.inputs[id];
+    if (!player || !input) return;
+
+    if (player.cooldown > 0) {
+      player.cooldown--;
     }
 
-    if (this.input.shoot && this.state.player.cooldown <= 0) {
+    if (input.shoot && player.cooldown <= 0) {
       this.state.bullets.push({
         id: this.nextBulletId++,
-        x: this.state.player.x,
-        y: this.state.player.y,
+        x: player.x,
+        y: player.y,
       });
 
-      this.state.player.cooldown = 20;
+      player.cooldown = 20;
     }
   }
 
@@ -175,22 +191,26 @@ export class GameEngine {
       this.state.level++;
     }
 
-    for (const enemy of this.state.enemies) {
-      if (
-        this.isColliding(
-          enemy.x - 20,
-          enemy.y,
-          40,
-          40,
-          this.state.player.x,
-          this.state.player.y,
-          40,
-          40,
-        )
-      ) {
-        this.state.gameOver = true;
-        break;
+    for (const id in this.state.players) {
+      const player = this.state.players[id];
+      for (const enemy of this.state.enemies) {
+        if (
+          this.isColliding(
+            enemy.x - 20,
+            enemy.y,
+            40,
+            40,
+            player.x,
+            player.y,
+            40,
+            40,
+          )
+        ) {
+          this.state.gameOver = true;
+          break;
+        }
       }
+      if (this.state.gameOver) break;
     }
   }
 }
