@@ -36,6 +36,7 @@ export type GameState = {
   level: number;
   score: number;
   gameOver: boolean;
+  waiting: boolean;
 };
 
 export type ClientMessage =

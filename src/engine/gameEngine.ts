@@ -17,6 +17,8 @@ export class GameEngine {
   }
 
   public update(): void {
+    if (this.state.waiting) return;
+
     this.state.tick++;
 
     // Move players and shoot
@@ -46,6 +48,10 @@ export class GameEngine {
     this.inputs[id] = input;
   }
 
+  public setWaiting(waiting: boolean): void {
+    this.state.waiting = waiting;
+  }
+
   public addPlayer(id: string, name: string): void {
     this.state.players[id] = {
       name: name,
@@ -70,6 +76,7 @@ export class GameEngine {
       level: 1,
       score: 0,
       gameOver: false,
+      waiting: true,
     };
   }
 

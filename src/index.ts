@@ -60,6 +60,11 @@ wss.on("connection", (ws) => {
           }, TICK_INTERVAL);
         }
         engine.addPlayer(playerId, data.name);
+
+        // Unpause if 2 or more players
+        if (Object.keys(engine.getState().players).length >= 2) {
+          engine.setWaiting(false);
+        }
       } else if (data.type === MessageType.INPUT && engine) {
         engine.setInput(playerId, data.input);
       }
@@ -69,7 +74,14 @@ wss.on("connection", (ws) => {
   });
 
   ws.on("close", () => {
-    if (engine) engine.removePlayer(playerId);
+    if (engine) {
+      engine.removePlayer(playerId);
+
+      // Pause if less than 2 players
+      if (Object.keys(engine.getState().players).length < 2) {
+        engine.setWaiting(true);
+      }
+    }
 
     // If no clients left, we could optionally reset the engine
     if (wss.clients.size === 0 && interval) {
