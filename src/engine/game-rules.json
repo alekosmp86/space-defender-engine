@@ -2,13 +2,21 @@
   {
     "level": 1,
     "rules": {
-      "canFire": false
+      "canFire": false,
+      "goal": {
+        "type": "avoid",
+        "value": 50
+      }
     }
   },
   {
     "level": 2,
     "rules": {
-      "canFire": true
+      "canFire": true,
+      "goal": {
+        "type": "score",
+        "value": 1000
+      }
     }
   }
 ]

@@ -1,5 +1,5 @@
 import { BULLET_SPEED, PLAYER_SPEED } from "../constants.ts";
-import { Direction, EnemyPattern } from "../types/enums.ts";
+import { Direction, EnemyPattern, GoalType } from "../types/enums.ts";
 import type { GameState, InputState, LevelRules } from "../types/types.ts";
 import { RulesSystem } from "./rules-system.ts";
 
@@ -84,6 +84,7 @@ export class GameEngine {
       gameOver: false,
       waiting: true,
       rules: this.rulesSystem.getRulesForLevel(1),
+      goalProgress: 0,
     };
   }
 
@@ -171,15 +172,20 @@ export class GameEngine {
 
   private spawnEnemies(): void {
     if (this.state.tick % (60 - this.state.level * 5) === 0) {
-      this.state.enemies.push({
-        id: this.nextEnemyId++,
-        x: Math.random() * (this.width - 40) + 20,
-        y: -20,
-        speed: 2 + this.state.level * 0.5,
-        pattern:
-          this.state.level >= 3 ? EnemyPattern.ZIGZAG : EnemyPattern.STRAIGHT,
-        direction: Math.random() > 0.5 ? Direction.LEFT : Direction.RIGHT,
-      });
+      const playersCount = Object.keys(this.state.players).length;
+      const amountToSpawn = Math.max(1, 2 * playersCount * this.state.level);
+
+      for (let i = 0; i < amountToSpawn; i++) {
+        this.state.enemies.push({
+          id: this.nextEnemyId++,
+          x: Math.random() * (this.width - 40) + 20,
+          y: -20 - Math.random() * 100, // Vary start height to avoid perfect stacking
+          speed: 2 + this.state.level * 0.5,
+          pattern:
+            this.state.level >= 3 ? EnemyPattern.ZIGZAG : EnemyPattern.STRAIGHT,
+          direction: Math.random() > 0.5 ? Direction.LEFT : Direction.RIGHT,
+        });
+      }
     }
   }
 
@@ -200,15 +206,14 @@ export class GameEngine {
       // Remove if off screen
       if (enemy.y > 1000) {
         this.state.enemies.splice(i, 1);
+        if (this.state.rules.goal.type === GoalType.AVOID) {
+          this.state.goalProgress++;
+        }
       }
     }
   }
 
   private checkGameOver(): void {
-    if (this.state.score >= this.state.level * 200) {
-      this.state.level++;
-    }
-
     for (const id in this.state.players) {
       const player = this.state.players[id];
       for (const enemy of this.state.enemies) {
@@ -229,6 +234,18 @@ export class GameEngine {
         }
       }
       if (this.state.gameOver) break;
+    }
+
+    // Goal Progress update
+    if (this.state.rules.goal.type === GoalType.SCORE) {
+      this.state.goalProgress = this.state.score;
+    }
+
+    // Check level completion
+    if (this.state.goalProgress >= this.state.rules.goal.value) {
+      this.state.level++;
+      this.state.goalProgress = 0;
+      // Note: Rules will be updated in next tick's update() call
     }
   }
 }

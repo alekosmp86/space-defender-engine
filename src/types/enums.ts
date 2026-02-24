@@ -18,3 +18,9 @@ export const Direction = {
   NONE: 0,
 } as const;
 export type Direction = (typeof Direction)[keyof typeof Direction];
+
+export const GoalType = {
+  AVOID: "avoid",
+  SCORE: "score",
+} as const;
+export type GoalType = (typeof GoalType)[keyof typeof GoalType];

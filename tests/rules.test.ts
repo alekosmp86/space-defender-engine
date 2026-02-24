@@ -22,13 +22,13 @@ describe("GameEngine - Rules System", () => {
     engine.setWaiting(false);
 
     // Force level 2
-    engine.addPlayer("p1", "Test Player");
+    engine.addPlayer("p1", "Player 1");
     // We need to trigger a rules update. In gameEngine it happens at the end of update()
     // but it's based on state.level.
 
     // Mocking level increase (or just reaching score)
     // Score requirement for L2 is level * 200 = 1 * 200 = 200
-    engine.getState().score = 250;
+    engine.getState().goalProgress = 51; // NEW WAY
     engine.update(); // This should trigger level++ and then rules update
 
     expect(engine.getState().level).toBe(2);
