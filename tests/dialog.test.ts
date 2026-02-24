@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DialogSystem } from "../src/interaction/dialog-system.ts";
+import { DialogSystem } from "../src/interaction/dialogue-system.ts";
 
 describe("DialogSystem", () => {
   const dialogSystem = new DialogSystem();

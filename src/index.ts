@@ -7,13 +7,18 @@ import type {
   ServerMessage,
 } from "./types/types.ts";
 import { MessageType } from "./types/enums.ts";
+import { DialogSystem } from "./interaction/dialogue-system.ts";
 
 const wss = new WebSocketServer({ port: 8080 });
 let engine: GameEngine | null = null;
+let dialogSystem: DialogSystem | null = null;
 let nextPlayerId = 1;
 let interval: NodeJS.Timeout | null = null;
 
 console.log("Server running on ws://localhost:8080");
+
+dialogSystem = new DialogSystem();
+dialogSystem.loadDialogs();
 
 wss.on("connection", (ws) => {
   const playerId = (nextPlayerId++).toString();

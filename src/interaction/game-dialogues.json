@@ -1,0 +1,29 @@
+[
+  {
+    "level": 1,
+    "levelIntro": [
+      {
+        "playerName": "{p1}",
+        "dialogue": "Hey... despierta chiquitica..."
+      },
+      {
+        "playerName": "{p2}",
+        "dialogue": "Mmm... 5 minutos más..."
+      },
+      {
+        "playerName": "{p1}",
+        "dialogue": "No hay 5 minutos más, tenemos que prepararnos. Hoy es tu dia de examen de ingreso a la academia espacial."
+      },
+      {
+        "playerName": "{p2}",
+        "dialogue": "Ugh... ok, ok, ya voy..."
+      }
+    ],
+    "levelOutro": [
+      {
+        "playerName": "Player 1",
+        "dialogue": "Congratulations! You have completed level 1!"
+      }
+    ]
+  }
+]
