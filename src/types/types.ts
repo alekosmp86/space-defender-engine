@@ -15,6 +15,7 @@ export type Bullet = {
   id: number;
   x: number;
   y: number;
+  playerId: string;
 };
 
 export type Enemy = {

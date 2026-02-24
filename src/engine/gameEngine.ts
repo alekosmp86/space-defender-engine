@@ -110,6 +110,7 @@ export class GameEngine {
         id: this.nextBulletId++,
         x: player.x,
         y: player.y,
+        playerId: id,
       });
 
       player.cooldown = 20;
