@@ -1,6 +1,7 @@
 import { BULLET_SPEED, PLAYER_SPEED } from "../constants.ts";
 import { Direction, EnemyPattern } from "../types/enums.ts";
-import type { GameState, InputState } from "../types/types.ts";
+import type { GameState, InputState, LevelRules } from "../types/types.ts";
+import { RulesSystem } from "./rules-system.ts";
 
 export class GameEngine {
   private state: GameState;
@@ -9,10 +10,12 @@ export class GameEngine {
   private height: number;
   private nextBulletId: number = 0;
   private nextEnemyId: number = 0;
+  private rulesSystem: RulesSystem;
 
   constructor(width: number, height: number) {
     this.width = width;
     this.height = height;
+    this.rulesSystem = new RulesSystem();
     this.state = this.createInitialState();
   }
 
@@ -38,6 +41,9 @@ export class GameEngine {
 
     // Check game over
     this.checkGameOver();
+
+    // Update rules if level changed
+    this.state.rules = this.rulesSystem.getRulesForLevel(this.state.level);
   }
 
   public getState(): GameState {
@@ -77,6 +83,7 @@ export class GameEngine {
       score: 0,
       gameOver: false,
       waiting: true,
+      rules: this.rulesSystem.getRulesForLevel(1),
     };
   }
 
@@ -112,6 +119,8 @@ export class GameEngine {
     if (player.cooldown > 0) {
       player.cooldown--;
     }
+
+    if (!this.state.rules.canFire) return;
 
     if (input.shoot && player.cooldown <= 0) {
       this.state.bullets.push({

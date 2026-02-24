@@ -5,6 +5,10 @@ export type InputState = {
   shoot: boolean;
 };
 
+export type LevelRules = {
+  canFire: boolean;
+};
+
 export type Player = {
   name: string;
   x: number;
@@ -37,6 +41,7 @@ export type GameState = {
   score: number;
   gameOver: boolean;
   waiting: boolean;
+  rules: LevelRules;
 };
 
 export type ClientMessage =

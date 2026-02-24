@@ -1,0 +1,14 @@
+[
+  {
+    "level": 1,
+    "rules": {
+      "canFire": false
+    }
+  },
+  {
+    "level": 2,
+    "rules": {
+      "canFire": true
+    }
+  }
+]
