@@ -6,6 +6,7 @@ export type InputState = {
 };
 
 export type Player = {
+  name: string;
   x: number;
   y: number;
   cooldown: number;
@@ -44,6 +45,7 @@ export type ClientMessage =
     }
   | {
       type: typeof MessageType.INIT;
+      name: string;
       dimensions: {
         width: number;
         height: number;

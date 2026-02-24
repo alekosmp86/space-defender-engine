@@ -46,8 +46,9 @@ export class GameEngine {
     this.inputs[id] = input;
   }
 
-  public addPlayer(id: string): void {
+  public addPlayer(id: string, name: string): void {
     this.state.players[id] = {
+      name: name,
       x: this.width / 2,
       y: this.height - 60,
       cooldown: 0,

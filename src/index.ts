@@ -54,7 +54,7 @@ wss.on("connection", (ws) => {
             });
           }, TICK_INTERVAL);
         }
-        engine.addPlayer(playerId);
+        engine.addPlayer(playerId, data.name);
       } else if (data.type === MessageType.INPUT && engine) {
         engine.setInput(playerId, data.input);
       }
